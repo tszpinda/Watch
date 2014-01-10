@@ -102,6 +102,7 @@ func run(ui ui) time.Time {
 }
 
 func startWatching(p string) <-chan time.Time {
+log.Println("startWatching", p)
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		panic(err)
@@ -111,6 +112,7 @@ func startWatching(p string) <-chan time.Time {
 	case err != nil:
 		log.Fatalf("Failed to watch %s: %s", p, err)
 	case isdir:
+		log.Printf("startWatching %+v %+v\n", w, p)
 		watchDir(w, p)
 	default:
 		watch(w, p)
@@ -173,6 +175,9 @@ func modTime(p string) (time.Time, error) {
 }
 
 func watchDir(w *fsnotify.Watcher, p string) {
+	if strings.Contains(p, ".git") || strings.Contains(p, "node_modules") || strings.Contains(p, ".js") || strings.Contains(p, "static") {
+		return
+	}
 	ents, err := ioutil.ReadDir(p)
 	switch {
 	case os.IsNotExist(err):
